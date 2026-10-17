@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Will you go on a trip with me?</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 55%, #ffd1dc 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #3a2430; text-align: center; user-select: none;
+  }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  main { position: relative; z-index: 2; padding: 24px; width: 100%; max-width: 640px; }
+  .screen { display: flex; flex-direction: column; align-items: center; }
+  .hidden { display: none !important; }
+  .emoji { font-size: clamp(48px, 12vw, 92px); line-height: 1; margin-bottom: 8px;
+           animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+  h1 { font-size: clamp(24px, 6vw, 44px); line-height: 1.15; margin: 10px 0 8px;
+       font-weight: 800; letter-spacing: -0.02em; }
+  .sub { font-size: clamp(14px, 3.4vw, 18px); opacity: 0.75; margin: 0 0 26px; }
+  .row { display: flex; gap: 18px; align-items: center; justify-content: center;
+         flex-wrap: wrap; min-height: 64px; }
+  button { font-family: inherit; border: 0; cursor: pointer; font-weight: 800;
+           font-size: clamp(17px, 4.4vw, 22px); padding: 16px 40px; border-radius: 999px;
+           transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease; }
+  #yes { background: #e8466b; color: #fff; box-shadow: 0 12px 28px rgba(232,70,107,0.4); }
+  #yes:hover { background: #d93a5f; }
+  #no { background: rgba(255,255,255,0.85); color: #7a4457;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.12); position: relative; z-index: 3; }
+  .hint { margin-top: 26px; font-size: 13px; opacity: 0.5; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+  .shake { animation: shake 0.45s ease; }
+  .kicker { font-size: clamp(11px, 2.6vw, 13px); letter-spacing: 0.14em; text-transform: uppercase;
+            font-weight: 800; opacity: 0.55; margin: 0 0 4px; }
+  #escape { position: fixed; bottom: 14px; left: 0; right: 0; z-index: 4;
+            font-size: 11px; color: rgba(58,36,48,0.35); text-decoration: none; }
+  #escape:hover { color: rgba(58,36,48,0.65); }
+  #textyes { margin-top: 8px; background: #fff; color: #e8466b;
+          box-shadow: 0 8px 22px rgba(0,0,0,0.12); font-size: 16px; padding: 12px 26px;
+          border-radius: 999px; text-decoration: none; font-weight: 800; display: inline-block; }
+
+  /* little driving scene */
+  body { padding-bottom: 40px; }
+  #drive { position: fixed; left: 0; right: 0; bottom: 0; height: 140px; z-index: 1;
+           pointer-events: none; overflow: hidden; }
+  #hills { position: absolute; left: 0; bottom: 64px; width: 200%; height: 60px;
+           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='60' viewBox='0 0 400 60'%3E%3Cpath d='M0 60 L0 42 L40 22 L80 42 L120 16 L160 42 L200 28 L240 46 L280 20 L320 42 L360 18 L400 42 L400 60 Z' fill='%23c47a86' opacity='0.55'/%3E%3C/svg%3E");
+           background-repeat: repeat-x; background-size: 400px 60px;
+           animation: drift 38s linear infinite; }
+  #road { position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+          background: linear-gradient(#4a3440, #2e2029); }
+  #dashes { position: absolute; top: 30px; left: 0; width: 200%; height: 5px;
+            background: repeating-linear-gradient(90deg, #ffd166 0 34px, transparent 34px 74px);
+            animation: scroll 1.4s linear infinite; }
+  #car { position: absolute; bottom: 30px; left: 50%; width: 132px;
+         transform: translateX(-50%); animation: bob 0.9s ease-in-out infinite; }
+  .wheel { animation: spin 0.55s linear infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes scroll { from { transform: translateX(0) } to { transform: translateX(-74px) } }
+  @keyframes drift { from { transform: translateX(0) } to { transform: translateX(-400px) } }
+  @keyframes bob { 0%,100% { transform: translateX(-50%) translateY(0) } 50% { transform: translateX(-50%) translateY(-2.5px) } }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  @media (max-height: 720px) {
+    #drive { height: 104px; } #car { width: 106px; bottom: 22px; }
+    #hills { bottom: 52px; height: 48px; } #road { height: 52px; }
+    #dashes { top: 24px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div id="drive" aria-hidden="true">
+  <div id="hills"></div>
+  <div id="road">
+    <div id="dashes"></div>
+    <svg id="car" viewBox="0 0 140 70">
+      <rect x="8" y="26" width="124" height="28" rx="14" fill="#e8466b"/>
+      <path d="M34 30 L44 14 H96 L106 30 Z" fill="#e8466b"/>
+      <rect x="48" y="18" width="22" height="12" rx="4" fill="#ffe1e8"/>
+      <rect x="74" y="18" width="22" height="12" rx="4" fill="#ffe1e8"/>
+      <circle cx="120" cy="38" r="4" fill="#ffe9a3"/>
+      <rect x="8" y="44" width="10" height="6" rx="3" fill="#c92f52"/>
+      <rect x="122" y="44" width="10" height="6" rx="3" fill="#c92f52"/>
+      <g class="wheel">
+        <circle cx="34" cy="54" r="11" fill="#241a22"/>
+        <circle cx="34" cy="54" r="4" fill="#cfc7cf"/>
+        <line x1="34" y1="43" x2="34" y2="65" stroke="#cfc7cf" stroke-width="2"/>
+        <line x1="23" y1="54" x2="45" y2="54" stroke="#cfc7cf" stroke-width="2"/>
+      </g>
+      <g class="wheel">
+        <circle cx="106" cy="54" r="11" fill="#241a22"/>
+        <circle cx="106" cy="54" r="4" fill="#cfc7cf"/>
+        <line x1="106" y1="43" x2="106" y2="65" stroke="#cfc7cf" stroke-width="2"/>
+        <line x1="95" y1="54" x2="117" y2="54" stroke="#cfc7cf" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<main>
+  <section id="ask" class="screen">
+    <div class="emoji">🚗</div>
+    <p id="kicker" class="kicker"></p>
+    <h1 id="question">Will you go on a trip with me?</h1>
+    <p id="sub" class="sub"></p>
+    <div class="row">
+      <button id="yes">Yes 💛</button>
+      <button id="no">No</button>
+    </div>
+    <p class="hint" id="hint">Psst… try clicking No. I dare you. 👀</p>
+  </section>
+
+  <section id="win" class="screen hidden">
+    <div class="emoji">🎉</div>
+    <h1>Yay!</h1>
+    <p id="winmsg" class="sub"></p>
+    <a id="textyes" href="#">Text me YES 💬</a>
+    <p class="hint">Opens your messages with YES ready to send.</p>
+  </section>
+
+  <section id="noScreen" class="screen hidden">
+    <div class="emoji">💛</div>
+    <h1>That's okay.</h1>
+    <p class="sub">Thanks for being honest. No hard feelings.</p>
+  </section>
+</main>
+
+<a id="escape" href="#">Not interested? Say no for real</a>
+
+<script>
+const params = new URLSearchParams(location.search);
+const name = (params.get('name') || '').trim();
+const activity = (params.get('activity') || 'go on a trip with me').trim();
+const from = (params.get('from') || '').trim();
+
+const ask = document.getElementById('ask');
+const win = document.getElementById('win');
+const noScreen = document.getElementById('noScreen');
+const question = document.getElementById('question');
+const sub = document.getElementById('sub');
+const winmsg = document.getElementById('winmsg');
+const kicker = document.getElementById('kicker');
+const yes = document.getElementById('yes');
+const no = document.getElementById('no');
+const hint = document.getElementById('hint');
+
+question.textContent = name ? `${name}, will you ${activity}?` : `Will you ${activity}?`;
+sub.textContent = 'I promise it is a date in disguise.';
+kicker.textContent = from ? `A trip invitation from ${from}` : '';
+kicker.style.display = from ? 'block' : 'none';
+
+const labels = ['No','Are you sure?','Really?','Think again','Nice try','Nope',
+  "Can't catch me",'Last chance','Still no?',"You're persistent",'Fine, keep trying',
+  'Almost...','Not today','Catch me if you can'];
+let dodges = 0;
+let triedNo = false;
+let floating = false;
+
+function ensureFloat() {
+  if (floating) return;
+  const r = no.getBoundingClientRect();
+  no.style.position = 'fixed';
+  no.style.left = r.left + 'px';
+  no.style.top = r.top + 'px';
+  no.style.width = r.width + 'px';
+  no.style.height = r.height + 'px';
+  no.style.margin = '0';
+  floating = true;
+}
+
+function moveNo(ev) {
+  ensureFloat();
+  const pad = 16;
+  const w = no.offsetWidth || 120;
+  const h = no.offsetHeight || 54;
+  const maxX = window.innerWidth - w - pad;
+  const maxY = window.innerHeight - h - pad;
+  const cx = ev && (ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] ? ev.touches[0].clientX : null));
+  const cy = ev && (ev.clientY != null ? ev.clientY : (ev.touches && ev.touches[0] ? ev.touches[0].clientY : null));
+
+  let x = pad, y = pad, tries = 0;
+  do {
+    x = pad + Math.random() * Math.max(1, maxX - pad);
+    y = pad + Math.random() * Math.max(1, maxY - pad);
+    tries++;
+  } while (tries < 10 && cx != null && Math.hypot((x + w/2) - cx, (y + h/2) - cy) < 150);
+
+  no.style.left = x + 'px';
+  no.style.top = y + 'px';
+
+  dodges++;
+  if (!triedNo) { triedNo = true; hint.textContent = 'Told you. 😏 Now Yes works.'; }
+  no.textContent = labels[Math.min(dodges, labels.length - 1)];
+  const s = Math.min(1.4, 1 + dodges * 0.03);
+  yes.style.transform = `scale(${s})`;
+}
+
+function nearNo(ev) {
+  const r = no.getBoundingClientRect();
+  const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+  const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+  if (cx == null) return;
+  const dist = Math.hypot(cx - (r.left + r.width/2), cy - (r.top + r.height/2));
+  if (dist < Math.max(r.width, 130)) moveNo(ev);
+}
+
+document.addEventListener('mousemove', nearNo, { passive: true });
+document.addEventListener('touchmove', (e) => { if (e.target === no) { e.preventDefault(); moveNo(e); } }, { passive: false });
+document.addEventListener('touchstart', (e) => { if (e.target === no) { e.preventDefault(); moveNo(e); } }, { passive: false });
+no.addEventListener('pointerdown', (e) => { e.preventDefault(); moveNo(e); });
+no.addEventListener('mouseenter', moveNo);
+no.addEventListener('focus', moveNo);
+no.addEventListener('click', (e) => { e.preventDefault(); moveNo(e); });
+
+let yesTries = 0;
+yes.addEventListener('click', () => {
+  if (!triedNo && yesTries < 1) {
+    yesTries++;
+    yes.classList.remove('shake');
+    void yes.offsetWidth;
+    yes.classList.add('shake');
+    hint.textContent = 'Not so fast. Try No first 😏';
+    return;
+  }
+  ask.classList.add('hidden');
+  win.classList.remove('hidden');
+  winmsg.textContent = name
+    ? `Pack your bags, ${name}. Our road trip starts soon. 🚗💛`
+    : 'Pack your bags. Our road trip starts soon. 🚗💛';
+  burst();
+});
+
+/* text-me button: opens the messaging app with YES prefilled */
+const phone = (params.get('phone') || '').replace(/[^\d+]/g, '');
+const textyes = document.getElementById('textyes');
+const yesBody = encodeURIComponent("YES! 💛 I'm in for the road trip.");
+textyes.href = `sms:${phone}?&body=${yesBody}`;
+textyes.textContent = from ? `Text ${from} YES 💬` : 'Text me YES 💬';
+
+document.getElementById('escape').addEventListener('click', (e) => {
+  e.preventDefault();
+  ask.classList.add('hidden');
+  noScreen.classList.remove('hidden');
+});
+
+/* ---- confetti ---- */
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+let parts = [], raf = null;
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener('resize', resize); resize();
+
+function burst() {
+  const colors = ['#e8466b','#ffd166','#06d6a0','#118ab2','#ffffff','#ff8fa3'];
+  for (let i = 0; i < 180; i++) {
+    parts.push({
+      x: innerWidth / 2, y: innerHeight * 0.42,
+      vx: (Math.random() - 0.5) * 16,
+      vy: (Math.random() - 0.9) * 16,
+      g: 0.32 + Math.random() * 0.2,
+      size: 4 + Math.random() * 8,
+      color: colors[i % colors.length],
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.3,
+      life: 1
+    });
+  }
+  if (!raf) tick();
+}
+
+function tick() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  parts.forEach(p => {
+    p.vy += p.g; p.x += p.vx; p.y += p.vy;
+    p.rot += p.vr; p.life -= 0.008;
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
+    ctx.restore();
+  });
+  parts = parts.filter(p => p.life > 0 && p.y < canvas.height + 40);
+  if (parts.length) { raf = requestAnimationFrame(tick); }
+  else { raf = null; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+}
+</script>
+</body>
+</html>
