@@ -46,9 +46,7 @@
   #escape { position: fixed; bottom: 14px; left: 0; right: 0; z-index: 4;
             font-size: 11px; color: rgba(58,36,48,0.35); text-decoration: none; }
   #escape:hover { color: rgba(58,36,48,0.65); }
-  #textyes { margin-top: 8px; background: #fff; color: #e8466b;
-          box-shadow: 0 8px 22px rgba(0,0,0,0.12); font-size: 16px; padding: 12px 26px;
-          border-radius: 999px; text-decoration: none; font-weight: 800; display: inline-block; }
+
 
   /* little driving scene */
   body { padding-bottom: 40px; }
@@ -125,8 +123,6 @@
     <div class="emoji">🎉</div>
     <h1>Yay!</h1>
     <p id="winmsg" class="sub"></p>
-    <a id="textyes" href="#">Text me YES 💬</a>
-    <p class="hint">Opens your messages with YES ready to send.</p>
   </section>
 
   <section id="noScreen" class="screen hidden">
@@ -241,12 +237,7 @@ yes.addEventListener('click', () => {
   burst();
 });
 
-/* text-me button: opens the messaging app with YES prefilled */
-const phone = (params.get('phone') || '').replace(/[^\d+]/g, '');
-const textyes = document.getElementById('textyes');
-const yesBody = encodeURIComponent("YES! 💛 I'm in for the road trip.");
-textyes.href = `sms:${phone}?&body=${yesBody}`;
-textyes.textContent = from ? `Text ${from} YES 💬` : 'Text me YES 💬';
+/* text-me button removed */
 
 document.getElementById('escape').addEventListener('click', (e) => {
   e.preventDefault();
