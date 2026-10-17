@@ -38,6 +38,17 @@
   #no { background: rgba(255,255,255,0.85); color: #7a4457;
         box-shadow: 0 8px 22px rgba(0,0,0,0.12); position: relative; z-index: 3; }
   .hint { margin-top: 26px; font-size: 13px; opacity: 0.5; }
+  .hint.dare {
+    display: inline-block; margin-top: 22px; padding: 11px 20px; border-radius: 999px;
+    background: #ffe066; color: #6b2b3f; font-size: clamp(14px, 3.4vw, 18px);
+    font-weight: 800; opacity: 1; transform: rotate(-2deg);
+    box-shadow: 0 8px 20px rgba(232,70,107,0.28);
+    animation: darePulse 1.4s ease-in-out infinite;
+  }
+  @keyframes darePulse {
+    0%,100% { transform: rotate(-2deg) scale(1); box-shadow: 0 8px 20px rgba(232,70,107,0.28); }
+    50% { transform: rotate(-2deg) scale(1.07); box-shadow: 0 14px 32px rgba(232,70,107,0.5); }
+  }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
     40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
   .shake { animation: shake 0.45s ease; }
@@ -116,7 +127,7 @@
       <button id="yes">Yes 💛</button>
       <button id="no">No</button>
     </div>
-    <p class="hint" id="hint">Psst… try clicking No. I dare you. 👀</p>
+    <p class="hint dare" id="hint">👉 Psst… click No. I dare you 👀</p>
   </section>
 
   <section id="win" class="screen hidden">
@@ -196,7 +207,7 @@ function moveNo(ev) {
   no.style.top = y + 'px';
 
   dodges++;
-  if (!triedNo) { triedNo = true; hint.textContent = 'Told you. 😏 Now Yes works.'; }
+  if (!triedNo) { triedNo = true; hint.classList.remove('dare'); hint.textContent = 'Told you. 😏 Now Yes works.'; }
   no.textContent = labels[Math.min(dodges, labels.length - 1)];
   const s = Math.min(1.4, 1 + dodges * 0.03);
   yes.style.transform = `scale(${s})`;
@@ -226,6 +237,7 @@ yes.addEventListener('click', () => {
     yes.classList.remove('shake');
     void yes.offsetWidth;
     yes.classList.add('shake');
+    hint.classList.add('dare');
     hint.textContent = 'Not so fast. Try No first 😏';
     return;
   }
